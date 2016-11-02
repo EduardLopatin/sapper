@@ -1,0 +1,19 @@
+body{
+margin-top: 10vh;
+}
+input{
+    margin: 10px auto;
+    display:block;
+}
+button{
+    margin: 10px auto;
+    display:block;
+    background-color: cyan;
+}
+h5{
+    color: darkred;
+    display: none;
+}
+#startScreen{
+    text-align: center;
+}
