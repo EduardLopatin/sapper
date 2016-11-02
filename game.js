@@ -22,9 +22,36 @@
             if(canWeStart){
                 hideStartScreen();
                 createField(options.fieldOptions.height, options.fieldOptions.width, options.lineSize,fieldBlocks);
+                addEventsForMouseButtons(fieldBlocks);
                 genMines(options.fieldOptions.minesQuantity);
+
             }
 
+        }
+        function addEventsForMouseButtons(field) {
+            field.forEach(function (line) {
+                line.forEach(function (block) {
+                    leftClick(block);
+                    rightClick(block);
+                })
+            });
+
+        }
+        function rightClick(block) {
+            block.element.addEventListener('contextmenu', function(e) {
+                block.flag = true;
+                e.target.innerHTML = '&#9873';
+                e.preventDefault();
+            }, false);
+        }
+        function leftClick(block) {
+            block.element.addEventListener('click', function (e) {
+                if(block.mine){
+                    alert('you lose')
+                }else {
+                    e.target.style.backgroundColor = 'lightgrey';
+                }
+            })
         }
         function genMines(quantity) {
             for( var step = 0; step < quantity; step++){
@@ -47,7 +74,7 @@
                         possibleBlocksForMines.push(block)
                     }
                 })
-            })
+            });
             return possibleBlocksForMines
         }
         function hideStartScreen() {
@@ -153,7 +180,7 @@
             blockStyle.width = size;
             blockStyle.height = size;
             blockStyle.float = 'left';
-            blockStyle.fontSize = lineSize/cellsX + 'px';
+            blockStyle.fontSize = lineSize/cellsX / 2 + 'px';
         };
         function createField( cellsY, cellsX, lineSize, fieldBlocks, target ) {
             var container = createContainer( lineSize );
@@ -175,13 +202,6 @@
         function getRandom( min, max ) {
             return min + Math.floor( Math.random() * ( max + 1 - min ) );
         }
-        function setActionOnFieldBlocks( fieldBlocks, action ) {
-            for( var y = 0; y <= fieldBlocks.length - 1; y++ ){
-                for( var x = 0; x <= fieldBlocks.length - 1; x++ ){
-                    fieldBlocks[y][x].element.onclick = action
-                }
-            }
-        };
         function getBlocksAroundBlock( block, field , cellSize, blocks) {
             for( var x = 0; x < 3; x++ ){
                 for( var y = 0; y < 3; y++ ){
