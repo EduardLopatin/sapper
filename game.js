@@ -11,9 +11,9 @@
     function SapperGame() {
         var options = {};
         var fieldBlocks = [];
-        options.cellSize = 0;
         options.lineSize = Math.floor( window.innerHeight / 1.5 );
         options.mines = [];
+        options.flags = 0;
         declareActionOnStartButton();
 
         function newGame() {
@@ -22,11 +22,23 @@
             if(canWeStart){
                 hideStartScreen();
                 createField(options.fieldOptions.height, options.fieldOptions.width, options.lineSize,fieldBlocks);
-                addEventsForMouseButtons(fieldBlocks);
                 genMines(options.fieldOptions.minesQuantity);
-
+                options.flags = getFlagsQuantity();
+                addEventsForMouseButtons(fieldBlocks);
+                createFlagsBar();
             }
-
+        }
+        function getFlagsQuantity(){
+            return options.mines.length
+        }
+        function changeBarStatus() {
+            options.flagBar.element.innerHTML = 'flags left ' + options.flags;
+        }
+        function createFlagsBar() {
+            options.flagBar = {};
+            options.flagBar.element = document.createElement('h3');
+            options.flagBar.element.innerHTML = 'flags left ' + options.flags;
+            document.body.appendChild(options.flagBar.element);
         }
         function addEventsForMouseButtons(field) {
             field.forEach(function (line) {
@@ -39,19 +51,60 @@
         }
         function rightClick(block) {
             block.element.addEventListener('contextmenu', function(e) {
-                block.flag = true;
-                e.target.innerHTML = '&#9873';
+                if(options.flags >= 1){
+                    if(block.flag == false && block.element.innerHTML == ''){
+                        addFlag(block);
+                        checkGame();
+                    }else {
+                        delFlag(block);
+                    }
+                    changeBarStatus();
+                }
                 e.preventDefault();
             }, false);
         }
+        function addFlag(block) {
+            block.flag = true;
+            block.element.innerHTML = '&#9873';
+            --options.flags;
+        }
+        function delFlag(block) {
+            block.flag = false;
+            block.element.innerHTML = '';
+            ++options.flags;
+            console.log(options.mines);
+        }
         function leftClick(block) {
-            block.element.addEventListener('click', function (e) {
+            block.element.addEventListener('click', function () {
                 if(block.mine){
                     alert('you lose')
-                }else {
-                    e.target.style.backgroundColor = 'lightgrey';
+                }else if(!block.flag) {
+                    var blocksAround = [];
+                  getBlocksAroundBlock(block,fieldBlocks,options.fieldOptions.height,options.fieldOptions.width, blocksAround)
+                  var result = getMinesQuantityAround(blocksAround);
+                  block.element.innerHTML = result;
                 }
             })
+        }
+        function getMinesQuantityAround(blocks) {
+            var minesCount = 0;
+            blocks.forEach(function (block) {
+                if(block.mine == true){
+                    minesCount++
+                }
+            })
+            return minesCount
+        }
+        function checkGame() {
+            var defused = 0;
+            options.mines.forEach(function (block) {
+                if(block.flag && block.mine){
+                    defused++
+                }if(defused == options.mines.length){
+                    alert('win')
+                }
+            })
+
         }
         function genMines(quantity) {
             for( var step = 0; step < quantity; step++){
@@ -63,8 +116,6 @@
                 minedBlock.element.style.backgroundColor = 'red';
                 options.mines.push(minedBlock)
             }
-
-
         }
         function getPossibleBlocksForMines() {
             var possibleBlocksForMines = [];
@@ -172,6 +223,7 @@
             console.log(fieldBlocks);
         };
         function setStyleForBlocks( cellsX, lineSize, block ) {
+            block.element.className += 'block';
             var borderSize = 1;
             var blockStyle = block.element.style;
             var size = ( lineSize / cellsX ) - borderSize * 2 + 'px';
@@ -202,12 +254,12 @@
         function getRandom( min, max ) {
             return min + Math.floor( Math.random() * ( max + 1 - min ) );
         }
-        function getBlocksAroundBlock( block, field , cellSize, blocks) {
+        function getBlocksAroundBlock( block, field , cellsY, cellsX, blocks) {
             for( var x = 0; x < 3; x++ ){
                 for( var y = 0; y < 3; y++ ){
-                    var checkedX = (block.x - 1) + x;
-                    var checkedY = (block.y - 1) + y;
-                    if(checkedX >= 0 && checkedX < cellSize && checkedY >= 0 && checkedY < cellSize){
+                    var checkedX = (block.y - 1) + x;
+                    var checkedY = (block.x - 1) + y;
+                    if(checkedX >= 0 && checkedX < cellsX && checkedY >= 0 && checkedY < cellsY){
                         var checkedBlock = field[checkedX][checkedY];
                         blocks.push(checkedBlock);
                     }
