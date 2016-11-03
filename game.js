@@ -1,12 +1,19 @@
-    // -------------------->x
-    // |
-    // |
-    // |
-    // |
-    // |
-    // |
-    // |
-    // V y
+// -------------------->x
+// |
+// |
+// |
+// |
+// |
+// |
+// |
+// V y
+//&#128578; - smile
+//&#128526; - cool
+//&#128558; - open mouth
+//&#128565; - dead
+//&#128163; - bomb
+//&#128165; - explosion
+//&#128681; - flag
 (function () {
     function SapperGame() {
         var options = {};
@@ -14,14 +21,16 @@
         options.lineSize = Math.floor( window.innerHeight / 1.5 );
         options.mines = [];
         options.flags = 0;
+        options.fieldTarget = document.getElementById('field');
         declareActionOnStartButton();
 
         function newGame() {
             var canWeStart;
-          canWeStart = checkInputs();
+            canWeStart = checkInputs();
             if(canWeStart){
                 hideStartScreen();
-                createField(options.fieldOptions.height, options.fieldOptions.width, options.lineSize,fieldBlocks);
+                createSmileButton();
+                createField(options.fieldOptions.height, options.fieldOptions.width, options.lineSize,fieldBlocks,options.fieldTarget);
                 genMines(options.fieldOptions.minesQuantity);
                 options.flags = getFlagsQuantity();
                 addEventsForMouseButtons(fieldBlocks);
@@ -32,40 +41,83 @@
             return options.mines.length
         }
         function changeBarStatus() {
-            options.flagBar.element.innerHTML = 'flags left ' + options.flags;
+            options.flagBar.element.innerHTML = 'flags ' + options.flags;
         }
         function createFlagsBar() {
             options.flagBar = {};
             options.flagBar.element = document.createElement('h3');
-            options.flagBar.element.innerHTML = 'flags left ' + options.flags;
+            options.flagBar.element.innerHTML = 'flags ' + options.flags;
             document.body.appendChild(options.flagBar.element);
         }
         function addEventsForMouseButtons(field) {
             field.forEach(function (line) {
                 line.forEach(function (block) {
-                    leftClick(block);
-                    rightClick(block);
+                    block.element.addEventListener('click', leftClick);
+                    block.element.addEventListener('contextmenu', rightClick);
+                    block.element.addEventListener('mousedown', openMouthSmile);
+                    block.element.addEventListener('mouseup',shutMouthOrDieSmile);
+
                 })
             });
-
         }
-        function rightClick(block) {
-            block.element.addEventListener('contextmenu', function(e) {
-                if(options.flags >= 1){
-                    if(block.flag == false && block.element.innerHTML == ''){
-                        addFlag(block);
-                        checkGame();
-                    }else {
-                        delFlag(block);
-                    }
-                    changeBarStatus();
+        function shutMouthOrDieSmile(e){
+            var block = fieldBlocks[this.y][this.x];
+            if(e.which == 1 && block.mine == true){
+                //&#128565; - dead
+                options.smileButton.innerHTML = '&#128565;'
+            }
+            else {
+                //&#128578; - smile
+                options.smileButton.innerHTML = '&#128578;'
+            }
+        }
+        function openMouthSmile(){
+            //&#128558; - open mouth
+            options.smileButton.innerHTML = '&#128558;'
+        }
+        function leftClick() {
+            var block = fieldBlocks[this.y][this.x];
+            if(block.mine){
+                // &#128163; - bomb
+                showAllMines();
+                showExplosion(block);
+                finishGame(fieldBlocks);
+            }else if(!block.flag) {
+                block.isOpen = true;
+                checkBlocksAround(block);
+                checkGame();
+            }
+        }
+        function showAllMines() {
+            options.mines.forEach(function (mine) {
+                mine.element.innerHTML = '&#128163;';
+                mine.element.style.backgroundColor = 'red';
+                if(mine.flag == true){
+                    mine.element.style.backgroundColor = 'green'
+                    mine.element.innerHTML = '&#128681';
                 }
-                e.preventDefault();
-            }, false);
+            })
         }
+        function showExplosion(block) {
+            //&#128165; - explosion
+            block.element.innerHTML = '&#128165;';
+            block.element.style.backgroundColor = 'red';
+        }
+        function rightClick(e) {
+            var block = fieldBlocks[this.y][this.x];
+            if(block.flag == false && block.element.innerHTML == ''){
+                addFlag(block);
+            }else if(block.flag == true) {
+                delFlag(block);
+            }
+            changeBarStatus();
+            e.preventDefault();
+        }
+
         function addFlag(block) {
+            //&#128681; - flag
             block.flag = true;
-            block.element.innerHTML = '&#9873';
+            block.element.innerHTML = '&#128681';
             --options.flags;
         }
         function delFlag(block) {
@@ -74,18 +126,59 @@
             ++options.flags;
             console.log(options.mines);
         }
-        function leftClick(block) {
-            block.element.addEventListener('click', function () {
-                if(block.mine){
-                    alert('you lose')
-                }else if(!block.flag) {
-                    var blocksAround = [];
-                  getBlocksAroundBlock(block,fieldBlocks,options.fieldOptions.height,options.fieldOptions.width, blocksAround)
-                  var result = getMinesQuantityAround(blocksAround);
-                  block.element.innerHTML = result;
-                }
+
+        function checkGame() {
+            var opened = 0;
+            var nonMinedBlocks = (options.fieldOptions.height * options.fieldOptions.width) - options.mines.length;
+            fieldBlocks.forEach(function (line) {
+                line.forEach(function (block) {
+                    if(block.isOpen == true){
+                        opened++
+                    }
+                })
+            });
+            if(opened == nonMinedBlocks){
+                finishGame(fieldBlocks);
+                showAllMines();
+                //&#128526; - cool
+                options.smileButton.innerHTML = '&#128526;'
+            }
+        }
+        function finishGame(field) {
+            field.forEach(function (line) {
+                line.forEach(function (block) {
+                    block.element.removeEventListener('click', leftClick);
+                    block.element.removeEventListener('contextmenu', rightClick);
+                    block.element.removeEventListener('mousedown', openMouthSmile);
+                    block.element.removeEventListener('mouseup', shutMouthOrDieSmile);
+                })
             })
         }
+        function restart() {
+            options.smileButton.innerHTML = '&#128578';
+            clearField();
+            clearMinesAndFlags();
+            createField(options.fieldOptions.height, options.fieldOptions.width, options.lineSize,fieldBlocks,options.fieldTarget);
+            genMines(options.fieldOptions.minesQuantity);
+            options.flags = getFlagsQuantity();
+            addEventsForMouseButtons(fieldBlocks);
+        }
+
+        function clearMinesAndFlags() {
+            options.mines = [];
+            options.flags = 0;
+        }
+        function clearField() {
+            document.getElementById('field').innerHTML = ' ';
+            fieldBlocks = [];
+        }
+        function checkBlocksAround(block){
+            var blocksAround = [];
+            getBlocksAroundBlock(block,fieldBlocks,options.fieldOptions.height,options.fieldOptions.width, blocksAround)
+            var result = getMinesQuantityAround(blocksAround);
+            block.element.innerHTML = result;
+        }
+
         function getMinesQuantityAround(blocks) {
             var minesCount = 0;
             blocks.forEach(function (block) {
@@ -95,16 +188,14 @@
             })
             return minesCount
         }
-        function checkGame() {
-            var defused = 0;
-            options.mines.forEach(function (block) {
-                if(block.flag && block.mine){
-                    defused++
-                }if(defused == options.mines.length){
-                    alert('win')
-                }
-            })
 
+        function createSmileButton(){
+            var target = document.getElementById('smileButtonBlock');
+            options.smileButton = document.createElement('button');
+            options.smileButton.className = 'smileButton';
+            options.smileButton.innerHTML = '&#128578;';
+            options.smileButton.onclick = restart;
+            target.appendChild(options.smileButton);
         }
         function genMines(quantity) {
             for( var step = 0; step < quantity; step++){
@@ -113,7 +204,7 @@
                 var position = getRandom(0, freeBlocks.length -     1);
                 var minedBlock = freeBlocks[position];
                 minedBlock.mine = true;
-                minedBlock.element.style.backgroundColor = 'red';
+                // minedBlock.element.style.backgroundColor = 'red';
                 options.mines.push(minedBlock)
             }
         }
@@ -129,7 +220,7 @@
             return possibleBlocksForMines
         }
         function hideStartScreen() {
-           document.getElementById('startScreen').style.display = 'none'
+            document.getElementById('startScreen').style.display = 'none'
         }
         function getInput(id) {
             return document.getElementById(id).value
@@ -211,7 +302,8 @@
                         y: y,
                         x: x,
                         mine: false,
-                        flag: false
+                        flag: false,
+                        isOpen: false
                     };
                     block.element.y = y;
                     block.element.x = x;
@@ -220,7 +312,6 @@
                 }
                 fieldBlocks.push( line );
             }
-            console.log(fieldBlocks);
         };
         function setStyleForBlocks( cellsX, lineSize, block ) {
             block.element.className += 'block';
@@ -232,7 +323,7 @@
             blockStyle.width = size;
             blockStyle.height = size;
             blockStyle.float = 'left';
-            blockStyle.fontSize = lineSize/cellsX / 2 + 'px';
+            blockStyle.fontSize = lineSize/cellsX / 1.5 + 'px';
         };
         function createField( cellsY, cellsX, lineSize, fieldBlocks, target ) {
             var container = createContainer( lineSize );
