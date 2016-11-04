@@ -70,7 +70,7 @@
             }
         }
         function mouseUp(e) {
-            if(e.target.classList[0] == 'block' && options.actualTarget.y == e.target.y && options.actualTarget.x == e.target.x) {
+            if(e.which == 1 && e.target.classList[0] == 'block' && options.actualTarget.y == e.target.y && options.actualTarget.x == e.target.x) {
             setSmileOrDead(e);
             }
             else {
@@ -81,8 +81,7 @@
             options.actualTarget = {
                 y: e.target.y,
                 x: e.target.x
-            }
-            console.log(options.actualTarget);
+            };
         }
         function setSmileOrDead(e){
             var face = options.smileButton;
