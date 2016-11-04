@@ -57,38 +57,39 @@
             options.flagBar.element.innerHTML = 'flags ' + options.flags;
             document.body.appendChild(options.flagBar.element);
         }
-        function addEventsForMouseButtons(field) {
-            field.forEach(function (line) {
-                line.forEach(function (block) {
-                    block.element.addEventListener('click', leftClick);
-                    block.element.addEventListener('contextmenu', rightClick);
-                    block.element.addEventListener('mousedown', setOpenMouthSmile);
-                    block.element.addEventListener('mouseup',setSmileOrDead);
-
-                })
-            });
+        function addEventsForMouseButtons() {
+                    document.addEventListener('click', leftClick);
+                    document.addEventListener('contextmenu', rightClick);
+                    document.addEventListener('mousedown', setOpenMouthSmile);
+                    document.addEventListener('mouseup',setSmileOrDead);
         }
         function setSmileOrDead(e){
-            var block = fieldBlocks[this.y][this.x];
-            var target = options.smileButton;
-            if(e.which == 1 && block.mine == true){
-                target.innerHTML = options.emotions.dead;
-            }
-            else {
-                target.innerHTML = options.emotions.smile;
+            if(e.target.classList[0] == 'block') {
+                var block = fieldBlocks[e.target.y][e.target.x];
+                var target = options.smileButton;
+                if (e.which == 1 && block.mine == true) {
+                    target.innerHTML = options.emotions.dead;
+                }
+                else {
+                    target.innerHTML = options.emotions.smile;
+                }
             }
         }
-        function setOpenMouthSmile(){
-            options.smileButton.innerHTML = options.emotions.openMouth;
+        function setOpenMouthSmile(e){
+            if(e.target.classList[0] == 'block') {
+                options.smileButton.innerHTML = options.emotions.openMouth;
+            }
         }
-        function leftClick() {
-            var block = fieldBlocks[this.y][this.x];
-            if(block.mine){
-                badFinishGame(fieldBlocks, block)
-            }else if(!block.flag) {
-                block.isOpen = true;
-                checkBlocksAround(block);
-                checkGameForGoodFinish();
+        function leftClick(e) {
+            if(e.target.classList[0] == 'block'){
+                var block = fieldBlocks[e.target.y][e.target.x];
+                if(block.mine){
+                    badFinishGame(fieldBlocks, block)
+                }else if(!block.flag) {
+                    block.isOpen = true;
+                    checkBlocksAround(block);
+                    checkGameForGoodFinish();
+                }
             }
         }
         function showAllMines() {
@@ -107,14 +108,16 @@
             block.element.style.backgroundColor = 'red';
         }
         function rightClick(e) {
-            var block = fieldBlocks[this.y][this.x];
-            if(block.flag == false && block.element.innerHTML == ''){
-                addFlag(block);
-            }else if(block.flag == true) {
-                delFlag(block);
+            if(e.target.classList[0] == 'block') {
+                var block = fieldBlocks[e.target.y][e.target.x];
+                if (block.flag == false && block.element.innerHTML == '') {
+                    addFlag(block);
+                } else if (block.flag == true) {
+                    delFlag(block);
+                }
+                changeBarStatus();
+                e.preventDefault();
             }
-            changeBarStatus();
-            e.preventDefault();
         }
 
         function addFlag(block) {
@@ -150,15 +153,12 @@
         function setCoolSmile() {
             options.smileButton.innerHTML = options.emotions.cool
         }
-        function removeEventsListeners(field) {
-            field.forEach(function (line) {
-                line.forEach(function (block) {
-                    block.element.removeEventListener('click', leftClick);
-                    block.element.removeEventListener('contextmenu', rightClick);
-                    block.element.removeEventListener('mousedown', setOpenMouthSmile);
-                    block.element.removeEventListener('mouseup', setSmileOrDead);
-                })
-            })
+        function removeEventsListeners() {
+            document.removeEventListener('click', leftClick);
+            document.removeEventListener('contextmenu', rightClick);
+            document.removeEventListener('mousedown', setOpenMouthSmile);
+            document.removeEventListener('mouseup', setSmileOrDead);
+
         }
 
         function goodFinishGame() {
