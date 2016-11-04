@@ -60,25 +60,42 @@
         function addEventsForMouseButtons() {
                     document.addEventListener('click', leftClick);
                     document.addEventListener('contextmenu', rightClick);
-                    document.addEventListener('mousedown', setOpenMouthSmile);
-                    document.addEventListener('mouseup',setSmileOrDead);
+                    document.addEventListener('mousedown', mouseDown);
+                    document.addEventListener('mouseup',mouseUp);
+        }
+        function mouseDown(e) {
+            if(e.target.classList[0] == 'block') {
+            setOpenMouthSmile(e);
+                saveTarget(e)
+            }
+        }
+        function mouseUp(e) {
+            if(e.target.classList[0] == 'block' && options.actualTarget.y == e.target.y && options.actualTarget.x == e.target.x) {
+            setSmileOrDead(e);
+            }
+            else {
+                options.smileButton.innerHTML = options.emotions.smile
+            }
+        }
+        function saveTarget(e) {
+            options.actualTarget = {
+                y: e.target.y,
+                x: e.target.x
+            }
+            console.log(options.actualTarget);
         }
         function setSmileOrDead(e){
-            if(e.target.classList[0] == 'block') {
+            var face = options.smileButton;
                 var block = fieldBlocks[e.target.y][e.target.x];
-                var target = options.smileButton;
-                if (e.which == 1 && block.mine == true) {
-                    target.innerHTML = options.emotions.dead;
+                if (block.mine == true) {
+                    face.innerHTML = options.emotions.dead;
                 }
                 else {
-                    target.innerHTML = options.emotions.smile;
+                    face.innerHTML = options.emotions.smile;
                 }
-            }
         }
         function setOpenMouthSmile(e){
-            if(e.target.classList[0] == 'block') {
                 options.smileButton.innerHTML = options.emotions.openMouth;
-            }
         }
         function leftClick(e) {
             if(e.target.classList[0] == 'block'){
@@ -156,8 +173,8 @@
         function removeEventsListeners() {
             document.removeEventListener('click', leftClick);
             document.removeEventListener('contextmenu', rightClick);
-            document.removeEventListener('mousedown', setOpenMouthSmile);
-            document.removeEventListener('mouseup', setSmileOrDead);
+            document.removeEventListener('mousedown', mouseDown);
+            document.removeEventListener('mouseup', mouseUp);
 
         }
 
