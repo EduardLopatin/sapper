@@ -1,0 +1,36 @@
+body{
+margin-top: 10vh;
+    text-align: center;
+}
+input{
+    margin: 10px auto;
+    display:block;
+}
+.startScreenButton{
+    margin: 10px auto;
+    display:block;
+    background-color: #d0dbdc;
+}
+h5{
+    color: darkred;
+    display: none;
+}
+#startScreen{
+    text-align: center;
+}
+.block{
+    box-shadow: 0 0 10px rgba(0,0,0,0.8 );
+}
+.block:active {
+    box-shadow: none;
+}
+.smileButton{
+    height: 50px;
+    width: 50px;
+    font-size: 25px;
+    margin-bottom: 10px;
+}
+
+
+
+
